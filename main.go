@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"golang.org/x/text/message"
 	"net/http"
@@ -11,45 +10,40 @@ import (
 
 type CoinGeckoResponse struct {
 	Bitcoin struct {
-		USD float64 `json:"usd"`
+		USD          float64 `json:"usd"`
+		USDMarketCap float64 `json:"usd_market_cap"`
 	} `json:"bitcoin"`
 }
 
 func main() {
-	name := flag.String("name", "World", "your name")
-
-	getBtc := flag.Bool("btc", false, "Fetch the current Bitcoin price in USD")
-
-	flag.Parse()
-
-	fmt.Printf("Hello, %s!\n", *name)
-
-	if *getBtc {
-		price, err := getBTCPrice()
-		if err != nil {
-			fmt.Println("Error fetching the Bitcoin price:", err)
-			os.Exit(1)
-		}
-
-		p := message.NewPrinter(message.MatchLanguage("en"))
-		formattedPrice := p.Sprintf("%.2f", price)
-
-		fmt.Printf("The current price of Bitcoin is: $%s USD\n", formattedPrice)
+	cgResponse, err := getBTCPrice()
+	if err != nil {
+		fmt.Println("Error fetching the Bitcoin price:", err)
+		os.Exit(1)
 	}
+
+	p := message.NewPrinter(message.MatchLanguage("en"))
+	formattedPrice := p.Sprintf("%.2f", cgResponse.Bitcoin.USD)
+	formattedMarketCap := p.Sprintf("%.2f", cgResponse.Bitcoin.USDMarketCap)
+
+	fmt.Printf("Current Bitcoin Price: U$D%s \n", formattedPrice)
+	fmt.Printf("Current Bitcoin Market Cap: U$D%s\n", formattedMarketCap)
 }
 
 // Function to fetch the current price of Bitcoin
-func getBTCPrice() (float64, error) {
-	resp, err := http.Get("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd")
+func getBTCPrice() (CoinGeckoResponse, error) {
+	resp, err := http.Get("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_market_cap=true")
+	var result CoinGeckoResponse
+
 	if err != nil {
-		return 0, err
+		return result, err
 	}
+
 	defer resp.Body.Close()
 
-	var result CoinGeckoResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return 0, err
+		return result, err
 	}
 
-	return result.Bitcoin.USD, nil
+	return result, nil
 }
