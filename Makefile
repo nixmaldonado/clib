@@ -1,5 +1,5 @@
 APP_NAME := clib
-VERSION := 0.2.0
+VERSION := 0.3.0
 
 # Directories
 BUILD_DIR := build
@@ -10,7 +10,7 @@ BINARY_ARM64 := $(BUILD_DIR)/$(APP_NAME)-arm64
 UNIVERSAL_BINARY := $(BUILD_DIR)/$(APP_NAME)
 
 # Compressed file name
-TAR_FILE := $(BUILD_DIR)/$(APP_NAME)-$(VERSION).tar.gz
+TAR_FILE := $(BUILD_DIR)/$(APP_NAME).tar.gz
 SHA_FILE := $(BUILD_DIR)/$(APP_NAME).sha256
 
 # Default target: Build and package
@@ -42,6 +42,7 @@ checksum: $(TAR_FILE)
 	@echo "Generating SHA256 checksum..."
 	shasum -a 256 $(TAR_FILE) > $(SHA_FILE)
 	@echo "SHA256 checksum written to $(SHA_FILE)"
+	cat $(SHA_FILE)
 
 # Clean build artifacts
 clean:
